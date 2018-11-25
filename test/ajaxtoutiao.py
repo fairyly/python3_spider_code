@@ -5,6 +5,8 @@ import requests
 from pyquery import PyQuery as pq
 from pymongo import MongoClient
 
+from multiprocessing.pool import Pool
+
 import os
 from hashlib import md5
 
@@ -104,14 +106,35 @@ def save_image(item):
        print('already download:',file_path)
   except requests.ConnectionError as e:
     print('Error', e.args)
+
+def main(offset):
+  json = get_pages()
+  for item in get_image(json):
+    # print(item)
+    save_image(item)
+
+
+GROUP_START = 1
+GROUP_END = 20
  
 if __name__ == '__main__':
-  json = get_pages()
+
+  # json = get_pages()
   # print(type(json),len(json))
   # results = parse_page(json)
   # for result in results:
   #   print(result)
 
-  for item in get_image(json):
-    print(item)
-    save_image(item)
+  # for item in get_image(json):
+  #   print(item)
+  #   save_image(item)
+  # 加入多线程
+  pool = Pool()
+  groups = ([x * 20 for x in range(GROUP_START,GROUP_END+1)])
+  pool.map(main,groups)
+  pool.close()
+  pool.join()
+ 
+
+
+
